@@ -48,12 +48,12 @@ pin_t pinopen(int pin, int mode)
    pf = popen(cmd_openPin,"r"); 
    if(!pf)
    {
-     fprintf(stderr, "Could not open pipe for output.\n");
+     fprintf(stderr, "pinopen: Could not open pipe for output.\n");
      exit(1);
    }
 
    if (pclose(pf) != 0)
-       fprintf(stderr," Error: Failed to close command stream \n");
+       fprintf(stderr," pinopen Error: Failed to close command stream \n");
    
    rpi5_gpio[pin].mode =  mode;
    return (pin_t) { UNDEF, mode };
@@ -69,6 +69,8 @@ void pinwrite(int indx_pin, int value)
 {
    char *cmd_openPin = (char*)malloc(1024);
    char*   pinfn = (char*)malloc(1024);
+   FILE *pf;
+   char data[512];
    if(value == LOW)
    {
      snprintf(cmd_openPin, 1024, "pinctrl set %d dl", indx_pin);
@@ -77,14 +79,19 @@ void pinwrite(int indx_pin, int value)
    {
       snprintf(cmd_openPin, 1024, "pinctrl set %d dh", indx_pin);
    }
+   pf = popen(cmd_openPin,"r"); 
+   if(!pf)
+   {
+     fprintf(stderr, "pinwrite : Could not open pipe for output.\n");
+     exit(1);
+   }
+
+   if (pclose(pf) != 0)
+   {
+     fprintf(stderr," pinwrite Error: Failed to close command stream \n");
+     exit(1);
+   } 
    rpi5_gpio[indx_pin].state =  value;
-   int returnCode = system(cmd_openPin);
-   // checking if the command was executed successfully
-   if (returnCode < 0){
-        printf("Command execution failed or returned "
-               "non-zero: %d", returnCode);
-               exit(1);
-    }
 }
 
 int pinread(int pin)
@@ -126,7 +133,7 @@ int pinread(int pin)
 
   if (pclose(pf) != 0)
   {
-   fprintf(stderr," Error: Failed to close command stream \n");
+   fprintf(stderr," pinread Error: Failed to close command stream \n");
    exit(1);
   }
 

@@ -5,10 +5,16 @@ Command line usage of pinctrl:
 
 $ pinctrl set [pin] [mode] [state]
 
-Compile with gcc:
+Compile with g++:
 
 $ g++ -c gpio_rpi5.c -o gpio_rpi5.o
 
 $ ar rcs gpio_rpi5.a gpio_rpi5.o
 
 $ g++ main.cpp -L. -l:gpio_rpi5.a -o myprogram
+
+or run build script 
+
+$ chmod +x ./build.sh
+
+$ ./build.sh
