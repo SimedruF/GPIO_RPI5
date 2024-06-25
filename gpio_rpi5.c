@@ -125,7 +125,10 @@ int pinread(int pin)
   rpi5_gpio[pin].state =  pinout;
 
   if (pclose(pf) != 0)
-       fprintf(stderr," Error: Failed to close command stream \n");
+  {
+   fprintf(stderr," Error: Failed to close command stream \n");
+   exit(1);
+  }
 
   return pinout;
 

@@ -121,7 +121,7 @@ typedef struct {
         int mode; /* 0 = input ; 1 = output */
 } pin_t;
 
-int gpio_main();
+int gpio_pintest(int pin_indx);
 pin_t pinopen(int pin, int mode);
 void pinclose(int indx_pin);
 void pinwrite(int indx_pin, int value);
