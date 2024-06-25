@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "gpio_rpi5.h": "c",
+        "unistd.h": "c"
+    }
+}

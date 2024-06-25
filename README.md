@@ -18,3 +18,5 @@ or run build script
 $ chmod +x ./build.sh
 
 $ ./build.sh
+
+If the application pinctrl is not available the program will return "sh: 1: pinctrl: not found"

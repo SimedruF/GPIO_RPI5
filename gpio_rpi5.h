@@ -115,9 +115,20 @@
 #define GPIOx235 235//: a1    -- | hi // HDMI1_SDA/AON_SGPIO3 = HDMI_TX1_BSC_SDA
 #define GPIOx236 236//: a2    -- | hi // PMIC_SCL/AON_SGPIO4 = BSC_M2_SCL
 #define GPIOx237 237//: a2    -- | hi // PMIC_SDA/AON_SGPIO5 = BSC_M2_SDA
+/**
+ * Pin modes: */
+#define INPUT (0)
+#define OUTPUT (1)
+/** 
+ * Pin states */
+#define LOW (0)
+#define HIGH (1)
+#define UNDEF (3)
+
+#define TEST_PIN 17
 
 typedef struct {
-        int state;
+        int state; /* LOW =0, HIGH=1, UNDEF=3 */
         int mode; /* 0 = input ; 1 = output */
 } pin_t;
 

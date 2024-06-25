@@ -10,13 +10,7 @@
 #include <cstring>
 #include "gpio_rpi5.h"
 
-// Pin modes:
-#define INPUT (0)
-#define OUTPUT (1)
-#define LOW (0)
-#define HIGH (1)
-#define UNDEF (3)
-#define TEST_PIN 17
+
 pin_t rpi5_gpio[237];
 
 int gpio_pintest(int pin_indx)
