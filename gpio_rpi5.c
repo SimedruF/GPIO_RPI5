@@ -100,8 +100,8 @@ int pinread(int pin)
   FILE *pf;
   char data[512];
   int pinout = 0;
-  char *pin_off = "lo";
-  char *pin_on = "hi";
+  char *pin_off = (char*)"lo";
+  char *pin_on = (char*)"hi";
   snprintf(cmd_openPin, 1024, "pinctrl get %d ", pin);
 
   pf = popen(cmd_openPin,"r"); 
