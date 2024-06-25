@@ -7,6 +7,8 @@ $ pinctrl set [pin] [mode] [state]
 
 Compile with gcc:
 
-$ gcc gpio_rpi5.c -o gpio_rpi5.o
+$ g++ -c gpio_rpi5.c -o gpio_rpi5.o
 
 $ ar rcs gpio_rpi5.a gpio_rpi5.o
+
+$ gcc main.c -L. -lgpio_rpi5 -o myprogram
