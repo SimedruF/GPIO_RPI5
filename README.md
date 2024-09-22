@@ -1,7 +1,7 @@
 This small and simple library for C it is using the pinctrl application on Raspberry Pi OS.The pinctrl subsystem in Linux is used to configure the behavior of pins on the GPIO (General Purpose Input/Output) interface. 
 Raspberry Pi OS uses the pinctrl subsystem to manage pin configuration and settings.
 
-Command line usage of pinctrl: 
+Command line usage of pinctrl (https://github.com/raspberrypi/utils/tree/master): 
 
 $ pinctrl set [pin] [mode] [state]
 
