@@ -218,6 +218,17 @@ static int gpio_valid_pin(int pin)
 
 /* ---- Public API (mmap backend) -------------------------- */
 
+/**
+ * @brief Initialize the GPIO subsystem (mmap backend).
+ *
+ * Opens `/dev/gpiomem0` and maps 192 KB of RP1 register space into the
+ * process address space. All pin states are reset to UNDEF.
+ *
+ * Must be called exactly once before any other GPIO function.
+ *
+ * @return 0 on success, -1 if the device cannot be opened or mmap fails.
+ * @note Requires read/write access to `/dev/gpiomem0` (default on Raspberry Pi OS).
+ */
 int gpio_init(void)
 {
   int i;
@@ -256,6 +267,13 @@ int gpio_init(void)
   return 0;
 }
 
+/**
+ * @brief Release all GPIO resources (mmap backend).
+ *
+ * Unmaps the RP1 register region and closes the `/dev/gpiomem0` file
+ * descriptor. Safe to call even if gpio_init() was not called or already
+ * cleaned up.
+ */
 void gpio_cleanup(void)
 {
   if (gpio_mmap_base && gpio_mmap_base != MAP_FAILED)
@@ -271,6 +289,19 @@ void gpio_cleanup(void)
   gpio_initialized = 0;
 }
 
+/**
+ * @brief Open a GPIO pin in the specified direction (mmap backend).
+ *
+ * Configures the pin for standard GPIO (SIO) operation by:
+ * 1. Setting FUNCSEL to SIO (ALT5) in the IO_BANK CTRL register.
+ * 2. Clearing output/OE overrides so SIO controls the pin.
+ * 3. Enabling input (IE) and clearing output-disable (OD) in the pad register.
+ * 4. Setting or clearing the Output Enable bit via atomic RIO registers.
+ *
+ * @param pin  GPIO number (0–53).
+ * @param mode Direction: INPUT (0) or OUTPUT (1).
+ * @return pin_t with the configured mode. On error, both fields are UNDEF.
+ */
 pin_t pinopen(int pin, int mode)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -320,6 +351,15 @@ pin_t pinopen(int pin, int mode)
   return (pin_t) { UNDEF, mode };
 }
 
+/**
+ * @brief Close a GPIO pin and reset it to a safe state (mmap backend).
+ *
+ * Clears the Output Enable bit (sets pin to input) and sets FUNCSEL to
+ * GPIO_FUNC_NULL (31) to disconnect the pin from all peripherals.
+ * The cached state is reset to UNDEF.
+ *
+ * @param indx_pin GPIO number (0–53) to close.
+ */
 void pinclose(int indx_pin)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -342,6 +382,16 @@ void pinclose(int indx_pin)
   rpi5_gpio[indx_pin].state = UNDEF;
 }
 
+/**
+ * @brief Write a digital value to a GPIO output pin (mmap backend).
+ *
+ * Uses the atomic SET or CLR register on SYS_RIO to change the output
+ * level in a single write, avoiding read-modify-write glitches.
+ *
+ * @param indx_pin GPIO number (0–53, must have been opened as OUTPUT).
+ * @param value    Desired logic level: HIGH (1) or LOW (0).
+ * @return 0 on success, -1 on error (invalid pin or not initialized).
+ */
 int pinwrite(int indx_pin, int value)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -369,6 +419,15 @@ int pinwrite(int indx_pin, int value)
   return 0;
 }
 
+/**
+ * @brief Read the current logic level of a GPIO pin (mmap backend).
+ *
+ * Reads the RIO_IN input register and extracts the bit for the given pin.
+ * Works on both INPUT and OUTPUT pins (output readback is supported).
+ *
+ * @param pin GPIO number (0–53).
+ * @return HIGH (1), LOW (0), or -1 on error.
+ */
 int pinread(int pin)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -396,6 +455,15 @@ int pinread(int pin)
   return result;
 }
 
+/**
+ * @brief Toggle the output state of a GPIO pin (mmap backend).
+ *
+ * Uses the atomic XOR register on SYS_RIO to flip the output bit in a
+ * single write. This is faster and race-free compared to read-modify-write.
+ *
+ * @param pin GPIO number (0–53, must have been opened as OUTPUT).
+ * @return 0 on success, -1 on error.
+ */
 int pintoggle(int pin)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -422,6 +490,16 @@ int pintoggle(int pin)
   return 0;
 }
 
+/**
+ * @brief Configure the internal pull resistor for a GPIO pin (mmap backend).
+ *
+ * Modifies the PUE (pull-up enable) and PDE (pull-down enable) bits in the
+ * pad register. Both bits are cleared first, then the requested pull is set.
+ *
+ * @param pin  GPIO number (0–53).
+ * @param pull Pull mode: PULL_UP (1), PULL_DOWN (2), or PULL_NONE (0).
+ * @return 0 on success, -1 on error (invalid pin, not initialized, or bad pull value).
+ */
 int pinpull(int pin, int pull)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -466,6 +544,23 @@ int pinpull(int pin, int pull)
   return 0;
 }
 
+/**
+ * @brief Set the alternate function (FUNCSEL) for a GPIO pin (mmap backend).
+ *
+ * Switches the pin from standard GPIO mode to a hardware peripheral function
+ * by writing the function number into the CTRL register's FUNCSEL field.
+ * Also enables input and clears output-disable on the pad.
+ *
+ * @param pin  GPIO number (0–53).
+ * @param func Alternate function: ALT0–ALT8 (0–8) or GPIO_FUNC_NULL (31).
+ * @return 0 on success, -1 on error.
+ *
+ * @par Example
+ * @code
+ * pinalt(GPIO2, ALT3);   // Set GPIO2 to I2C1 SDA
+ * pinalt(GPIO3, ALT3);   // Set GPIO3 to I2C1 SCL
+ * @endcode
+ */
 int pinalt(int pin, int func)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -505,6 +600,17 @@ int pinalt(int pin, int func)
   return 0;
 }
 
+/**
+ * @brief Set the output drive strength for a GPIO pin (mmap backend).
+ *
+ * Modifies the DRIVE field (bits 5:4) in the pad register to control
+ * the maximum source/sink current. Higher drive is useful for fast signals
+ * (SPI clock) or pins driving long traces.
+ *
+ * @param pin      GPIO number (0–53).
+ * @param strength One of: DRIVE_2MA (0), DRIVE_4MA (1), DRIVE_8MA (2), DRIVE_12MA (3).
+ * @return 0 on success, -1 on error.
+ */
 int pin_set_drive(int pin, int strength)
 {
   uint32_t io_base, rio_base, pads_base;
@@ -537,6 +643,16 @@ int pin_set_drive(int pin, int strength)
   return 0;
 }
 
+/**
+ * @brief Quick pin test: pulse a pin HIGH for 1 second, then LOW (mmap backend).
+ *
+ * Opens the pin as OUTPUT, drives it HIGH, waits 1 second, drives LOW,
+ * then closes the pin. Useful for visual verification with an LED or
+ * logic analyzer.
+ *
+ * @param pin_indx GPIO number (0–53) to test.
+ * @return 0 on success, -1 if the pin is invalid or cannot be opened.
+ */
 int gpio_pintest(int pin_indx)
 {
   if (!gpio_valid_pin(pin_indx)) return -1;

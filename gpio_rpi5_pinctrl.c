@@ -57,6 +57,15 @@ static int gpio_valid_pin(int pin)
   return 0;
 }
 
+/**
+ * @brief Initialize the GPIO subsystem (pinctrl backend).
+ *
+ * Resets all pin states to UNDEF and sets the initialization flag.
+ * Unlike the mmap backend, no device files are opened — each
+ * subsequent operation spawns a `pinctrl` CLI process.
+ *
+ * @return Always returns 0 (cannot fail).
+ */
 int gpio_init(void)
 {
   int i;
@@ -68,11 +77,26 @@ int gpio_init(void)
   return 0;
 }
 
+/**
+ * @brief Release GPIO resources (pinctrl backend).
+ *
+ * Clears the initialization flag. No file descriptors or memory
+ * mappings need to be released in this backend.
+ */
 void gpio_cleanup(void)
 {
   gpio_initialized = 0;
 }
 
+/**
+ * @brief Quick pin test: pulse a pin HIGH for 1 second (pinctrl backend).
+ *
+ * Opens the pin as OUTPUT, drives HIGH, waits 1 second, drives LOW,
+ * then closes. Executes 4 `pinctrl` commands total.
+ *
+ * @param pin_indx GPIO number to test (0–53, 100–135, or 200–237).
+ * @return 0 on success, -1 if the pin is invalid or a command fails.
+ */
 int gpio_pintest(int pin_indx)
 {
   if (!gpio_valid_pin(pin_indx)) return -1;
@@ -88,6 +112,17 @@ int gpio_pintest(int pin_indx)
   return 0;
 }
 
+/**
+ * @brief Open a GPIO pin in the specified direction (pinctrl backend).
+ *
+ * Runs `pinctrl set <pin> op` (output) or `pinctrl set <pin> ip` (input)
+ * via popen(). The command spawns a separate process, making this ~1000x
+ * slower than the mmap backend.
+ *
+ * @param pin  GPIO number (0–53, 100–135, or 200–237).
+ * @param mode Direction: INPUT (0) or OUTPUT (1).
+ * @return pin_t with the configured mode. On error, both fields are UNDEF.
+ */
 pin_t pinopen(int pin, int mode)
 {
    char cmd[128];
@@ -122,6 +157,14 @@ pin_t pinopen(int pin, int mode)
    return (pin_t) { UNDEF, mode };
 }
 
+/**
+ * @brief Close a GPIO pin and reset to input (pinctrl backend).
+ *
+ * Runs `pinctrl set <pin> ip` to reset the pin to a safe input state.
+ * The cached mode and state are reset to UNDEF.
+ *
+ * @param indx_pin GPIO number to close.
+ */
 void pinclose(int indx_pin)
 {
   char cmd[128];
@@ -138,6 +181,16 @@ void pinclose(int indx_pin)
   rpi5_gpio[indx_pin].state = UNDEF;
 }
 
+/**
+ * @brief Write a digital value to a GPIO pin (pinctrl backend).
+ *
+ * Runs `pinctrl set <pin> dl` (drive low) or `pinctrl set <pin> dh`
+ * (drive high). Implicitly sets the pin as output.
+ *
+ * @param indx_pin GPIO number (must be a valid pin).
+ * @param value    Desired level: HIGH (1) or LOW (0).
+ * @return 0 on success, -1 on error (invalid pin or command failure).
+ */
 int pinwrite(int indx_pin, int value)
 {
    char cmd[128];
@@ -171,6 +224,16 @@ int pinwrite(int indx_pin, int value)
    return 0;
 }
 
+/**
+ * @brief Read the current logic level of a GPIO pin (pinctrl backend).
+ *
+ * Runs `pinctrl get <pin>` and parses the output for "| lo" or "| hi"
+ * to determine the logic level. The pipe delimiter avoids false matches
+ * with pin name substrings.
+ *
+ * @param pin GPIO number.
+ * @return HIGH (1), LOW (0), or -1 on error or if the level cannot be parsed.
+ */
 int pinread(int pin)
 {
   char cmd[128];
@@ -214,6 +277,16 @@ int pinread(int pin)
   return pinout;
 }
 
+/**
+ * @brief Configure the internal pull resistor (pinctrl backend).
+ *
+ * Runs `pinctrl set <pin> pu|pd|pn` to set pull-up, pull-down,
+ * or no-pull respectively.
+ *
+ * @param pin  GPIO number.
+ * @param pull Pull mode: PULL_UP (1), PULL_DOWN (2), or PULL_NONE (0).
+ * @return 0 on success, -1 on error.
+ */
 int pinpull(int pin, int pull)
 {
   char cmd[128];
@@ -254,6 +327,15 @@ int pinpull(int pin, int pull)
   return 0;
 }
 
+/**
+ * @brief Toggle the output state of a GPIO pin (pinctrl backend).
+ *
+ * Reads the current level via pinread(), then writes the inverted value
+ * via pinwrite(). Requires two `pinctrl` commands (slower than mmap XOR).
+ *
+ * @param pin GPIO number (should have been opened as OUTPUT).
+ * @return 0 on success, -1 on error.
+ */
 int pintoggle(int pin)
 {
   int val = pinread(pin);
@@ -261,6 +343,22 @@ int pintoggle(int pin)
   return pinwrite(pin, val ? LOW : HIGH);
 }
 
+/**
+ * @brief Set the alternate function for a GPIO pin (pinctrl backend).
+ *
+ * Runs `pinctrl set <pin> a<func>` to switch the pin to a hardware
+ * peripheral function (SPI, I2C, UART, PWM, etc.).
+ *
+ * @param pin  GPIO number.
+ * @param func Alternate function number: 0–8 (ALT0–ALT8) or 31 (NULL/disconnect).
+ * @return 0 on success, -1 on error.
+ *
+ * @par Example
+ * @code
+ * pinalt(GPIO14, ALT4);  // Set GPIO14 to UART0 TXD
+ * pinalt(GPIO15, ALT4);  // Set GPIO15 to UART0 RXD
+ * @endcode
+ */
 int pinalt(int pin, int func)
 {
   char cmd[128];
@@ -295,6 +393,17 @@ int pinalt(int pin, int func)
   return 0;
 }
 
+/**
+ * @brief Set drive strength — NOT SUPPORTED in the pinctrl backend.
+ *
+ * The `pinctrl` CLI does not expose drive strength control.
+ * Use the mmap backend (gpio_rpi5.c) if drive strength configuration
+ * is required.
+ *
+ * @param pin      Ignored.
+ * @param strength Ignored.
+ * @return Always returns -1.
+ */
 int pin_set_drive(int pin, int strength)
 {
   (void)pin;
