@@ -1,0 +1,5 @@
+<map id="pinclose" name="pinclose">
+<area shape="rect" id="Node000001" title="Close a GPIO pin and reset it to a safe state." alt="" coords="156,5,232,31"/>
+<area shape="rect" id="Node000002" href="$group__core__api.html#ga77202d82ecb9267f1007ca750a0d67cb" title="Quick pin test: briefly pulses a pin HIGH then LOW." alt="" coords="5,5,108,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,21,108,21,108,15,142,15"/>
+</map>

@@ -1,0 +1,26 @@
+<map id="gpio_valid_pin" name="gpio_valid_pin">
+<area shape="rect" id="Node000001" title="Validate that a pin number is within the RP1 range." alt="" coords="313,184,429,209"/>
+<area shape="rect" id="Node000002" href="$group__core__api.html#ga77202d82ecb9267f1007ca750a0d67cb" title="Quick pin test: briefly pulses a pin HIGH then LOW." alt="" coords="5,160,108,185"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="361,172,348,136,329,95,301,56,284,39,264,25,236,12,211,8,186,12,157,25,138,38,121,54,94,93,75,131,64,161,59,159,70,129,89,90,117,51,135,34,155,21,184,7,211,3,237,7,267,21,287,35,305,52,333,92,353,134,366,170"/>
+<area shape="rect" id="Node000003" href="$group__core__api.html#ga14b33365797a7a60d0f4b213de42564e" title="Set the output drive strength for a GPIO pin." alt="" coords="156,36,265,61"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="352,174,315,124,291,98,264,74,245,63,248,59,267,70,294,94,319,121,357,171"/>
+<area shape="rect" id="Node000004" href="$group__core__api.html#ga518d1f257c42eb5a1819fcb65ccce21a" title="Set the alternate function (FUNCSEL) for a GPIO pin." alt="" coords="181,85,240,110"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="341,177,264,124,239,111,241,107,267,119,344,173"/>
+<area shape="rect" id="Node000005" href="$group__core__api.html#gada367c7b74bcd93238d109084d86fcf0" title="Close a GPIO pin and reset it to a safe state." alt="" coords="173,134,249,160"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="315,182,248,161,250,156,317,177"/>
+<area shape="rect" id="Node000006" href="$group__core__api.html#ga5d5e6f66c606a30568f2f5e83653fdb6" title="Open a GPIO pin for use in the specified direction." alt="" coords="173,184,248,209"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="300,199,248,199,248,194,300,194"/>
+<area shape="rect" id="Node000007" href="$group__core__api.html#ga5df230aba0f71c75b14cc8498ae5cec6" title="Configure the internal pull resistor for a GPIO pin." alt="" coords="177,233,244,258"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="317,216,245,238,243,233,316,211"/>
+<area shape="rect" id="Node000008" href="$group__core__api.html#gaa1c9a22bd9f995b5bd9520bf55761835" title="Read the current logic level of a GPIO pin." alt="" coords="175,332,246,357"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="357,222,319,272,294,298,267,322,247,334,245,329,264,318,291,295,315,268,352,219"/>
+<area shape="rect" id="Node000009" href="$group__core__api.html#ga3fcd2e6e8ef98f3b9331de79dc1fc20d" title="Toggle the output state of a GPIO pin (pinctrl backend)." alt="" coords="15,332,98,357"/>
+<area shape="poly" id="edge11_Node000001_Node000009" title=" " alt="" coords="366,223,353,258,333,300,305,341,287,358,267,372,243,382,219,387,168,385,121,374,84,360,85,355,123,369,169,380,218,381,242,377,264,367,284,354,301,337,329,298,348,256,361,221"/>
+<area shape="rect" id="Node000010" href="$group__core__api.html#ga667ec854157d4f186d37073adf17c3d5" title="Write a digital value (HIGH or LOW) to a GPIO output pin." alt="" coords="173,282,248,308"/>
+<area shape="poly" id="edge12_Node000001_Node000010" title=" " alt="" coords="344,220,267,272,242,285,240,280,264,267,341,215"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="160,158,109,167,108,161,159,153"/>
+<area shape="poly" id="edge7_Node000006_Node000002" title=" " alt="" coords="159,191,108,183,109,178,160,186"/>
+<area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="161,347,98,347,98,342,161,342"/>
+<area shape="poly" id="edge13_Node000010_Node000002" title=" " alt="" coords="165,278,154,272,103,227,66,187,70,183,107,223,158,268,167,274"/>
+<area shape="poly" id="edge14_Node000010_Node000009" title=" " alt="" coords="161,314,98,334,96,329,159,308"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="pinopen" name="pinopen">
+<area shape="rect" id="Node000001" title="Open a GPIO pin for use in the specified direction." alt="" coords="5,104,80,129"/>
+<area shape="rect" id="Node000002" href="$gpio__rpi5_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin number is within the RP1 range." alt="" coords="128,5,244,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="54,102,85,71,127,40,136,34,139,39,129,44,89,75,58,106"/>
+<area shape="rect" id="Node000003" href="$gpio__rpi5__pinctrl_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin index is within any known GPIO range." alt="" coords="128,55,244,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="79,101,134,82,136,87,81,106"/>
+<area shape="rect" id="Node000004" href="$gpio__rpi5_8c.html#a47014639910a37eb40b480237febc9cf" title="Resolve a GPIO number (0–53) into its bank&#45;specific parameters." alt="" coords="135,104,237,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="80,114,122,114,122,119,80,119"/>
+<area shape="rect" id="Node000005" href="$gpio__rpi5_8c.html#a6ddca9e64247d9b8a877e9b70ec52bfe" title="Read a 32&#45;bit hardware register." alt="" coords="147,153,225,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="81,127,136,146,134,151,79,132"/>
+<area shape="rect" id="Node000006" href="$gpio__rpi5_8c.html#a4c01897c77fc1077daf91b31480ded50" title="Write a 32&#45;bit value to a hardware register." alt="" coords="145,203,227,228"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="58,127,89,157,129,188,140,194,138,199,127,192,86,161,54,131"/>
+</map>

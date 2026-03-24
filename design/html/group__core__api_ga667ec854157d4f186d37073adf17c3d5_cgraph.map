@@ -1,0 +1,11 @@
+<map id="pinwrite" name="pinwrite">
+<area shape="rect" id="Node000001" title="Write a digital value (HIGH or LOW) to a GPIO output pin." alt="" coords="5,80,80,105"/>
+<area shape="rect" id="Node000002" href="$gpio__rpi5_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin number is within the RP1 range." alt="" coords="128,5,244,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="62,78,127,40,139,34,141,39,129,44,65,82"/>
+<area shape="rect" id="Node000003" href="$gpio__rpi5__pinctrl_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin index is within any known GPIO range." alt="" coords="128,55,244,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="80,84,114,77,115,83,81,89"/>
+<area shape="rect" id="Node000004" href="$gpio__rpi5_8c.html#a47014639910a37eb40b480237febc9cf" title="Resolve a GPIO number (0–53) into its bank&#45;specific parameters." alt="" coords="135,104,237,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="81,96,122,103,121,109,80,101"/>
+<area shape="rect" id="Node000005" href="$gpio__rpi5_8c.html#a4c01897c77fc1077daf91b31480ded50" title="Write a 32&#45;bit value to a hardware register." alt="" coords="145,153,227,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="66,103,129,138,143,145,141,150,127,143,64,108"/>
+</map>

@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['a_20button_20on_20gpio22_0',['Read a button on GPIO22',['../index.html#autotoc_md18',1,'']]],
+  ['alt0_1',['ALT0',['../group__alt__functions.html#ga1c8ebf0a7cf8103e29a2a9fa6dc8257e',1,'gpio_rpi5.h']]],
+  ['alt0_20—_20gpio18–21_2',['PCM / I2S (pinalt ALT0 — GPIO18–21)',['../index.html#autotoc_md49',1,'']]],
+  ['alt0_20dev_20spidev_20or_20bit_20banged_3',['SPI (pinalt ALT0 + /dev/spidev or bit-banged)',['../index.html#autotoc_md46',1,'']]],
+  ['alt1_4',['ALT1',['../group__alt__functions.html#gaadd2ea8d821473f3538dd9c7dfccb684',1,'gpio_rpi5.h']]],
+  ['alt2_5',['ALT2',['../group__alt__functions.html#gaee1b0ff7171e9596a3f9227f7196b51c',1,'gpio_rpi5.h']]],
+  ['alt3_6',['ALT3',['../group__alt__functions.html#gaf1a429f8605f2ea6817f70e2e9b869e1',1,'gpio_rpi5.h']]],
+  ['alt3_20dev_20i2c_20or_20bit_20banged_7',['I2C (pinalt ALT3 + /dev/i2c or bit-banged)',['../index.html#autotoc_md47',1,'']]],
+  ['alt4_8',['ALT4',['../group__alt__functions.html#ga5ec2350f1cdeed8f7be7847ab9ff825c',1,'gpio_rpi5.h']]],
+  ['alt4_20dev_20ttyama0_20or_20bit_20banged_9',['UART (pinalt ALT4 + /dev/ttyAMA0 or bit-banged)',['../index.html#autotoc_md48',1,'']]],
+  ['alt5_10',['ALT5',['../group__alt__functions.html#ga377524d4d34d05b98c00cc12d231a763',1,'gpio_rpi5.h']]],
+  ['alt6_11',['ALT6',['../group__alt__functions.html#gabb82c5d8e000eed483d1a76342f1c11e',1,'gpio_rpi5.h']]],
+  ['alt7_12',['ALT7',['../group__alt__functions.html#ga037aafe9b9acfdc3542b18bcf4262c2b',1,'gpio_rpi5.h']]],
+  ['alt8_13',['ALT8',['../group__alt__functions.html#ga54f9fe20aadf81d09605bc288265a9a0',1,'gpio_rpi5.h']]],
+  ['alternate_20function_14',['Set pin to SPI alternate function',['../index.html#autotoc_md19',1,'']]],
+  ['alternate_20function_20constants_15',['Alternate Function Constants',['../group__alt__functions.html',1,'']]],
+  ['alternate_20functions_20funcsel_16',['Alternate Functions (FUNCSEL)',['../index.html#autotoc_md14',1,'']]],
+  ['always_20on_20gpio_20200–237_20pinctrl_20backend_20only_17',['AON (Always-On) GPIO 200–237 (pinctrl backend only)',['../index.html#autotoc_md24',1,'']]],
+  ['an_20led_20on_20gpio17_18',['Blink an LED on GPIO17',['../index.html#autotoc_md17',1,'']]],
+  ['aon_20always_20on_20gpio_20200–237_20pinctrl_20backend_20only_19',['AON (Always-On) GPIO 200–237 (pinctrl backend only)',['../index.html#autotoc_md24',1,'']]],
+  ['api_20functions_20',['Core API Functions',['../group__core__api.html',1,'']]],
+  ['api_20reference_21',['API Reference',['../index.html#autotoc_md5',1,'']]],
+  ['architecture_22',['Architecture',['../index.html#autotoc_md41',1,'']]]
+];

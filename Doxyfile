@@ -59,13 +59,17 @@ GENERATE_LATEX         = NO
 #---------------------------------------------------------------------------
 # Diagrams
 #---------------------------------------------------------------------------
-HAVE_DOT               = NO
-CLASS_DIAGRAMS         = NO
-COLLABORATION_GRAPH    = NO
+HAVE_DOT               = YES
+CLASS_DIAGRAMS         = YES
+COLLABORATION_GRAPH    = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
-CALL_GRAPH             = NO
-CALLER_GRAPH           = NO
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+DOT_GRAPH_MAX_NODES    = 100
+DOT_MULTI_TARGETS      = YES
 
 #---------------------------------------------------------------------------
 # Grouping

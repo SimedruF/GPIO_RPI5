@@ -1,0 +1,5 @@
+<map id="pinread" name="pinread">
+<area shape="rect" id="Node000001" title="Read the current logic level of a GPIO pin." alt="" coords="136,5,207,31"/>
+<area shape="rect" id="Node000002" href="$group__core__api.html#ga3fcd2e6e8ef98f3b9331de79dc1fc20d" title="Toggle the output state of a GPIO pin (pinctrl backend)." alt="" coords="5,5,88,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,21,88,21,88,15,122,15"/>
+</map>

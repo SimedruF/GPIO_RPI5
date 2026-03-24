@@ -1,0 +1,13 @@
+<map id="gpio_pintest" name="gpio_pintest">
+<area shape="rect" id="Node000001" title="Quick pin test: briefly pulses a pin HIGH then LOW." alt="" coords="5,104,108,129"/>
+<area shape="rect" id="Node000002" href="$gpio__rpi5_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin number is within the RP1 range." alt="" coords="156,5,272,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,102,108,72,155,40,165,34,168,39,157,44,111,76,74,106"/>
+<area shape="rect" id="Node000003" href="$gpio__rpi5__pinctrl_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin index is within any known GPIO range." alt="" coords="156,55,272,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="97,101,159,82,160,87,99,107"/>
+<area shape="rect" id="Node000004" href="$group__core__api.html#gada367c7b74bcd93238d109084d86fcf0" title="Close a GPIO pin and reset it to a safe state (mmap backend)." alt="" coords="176,104,252,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="108,114,163,114,163,119,108,119"/>
+<area shape="rect" id="Node000005" href="$group__core__api.html#ga5d5e6f66c606a30568f2f5e83653fdb6" title="Open a GPIO pin in the specified direction (mmap backend)." alt="" coords="177,153,251,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="99,127,164,148,162,153,97,132"/>
+<area shape="rect" id="Node000006" href="$group__core__api.html#ga667ec854157d4f186d37073adf17c3d5" title="Write a digital value to a GPIO output pin (mmap backend)." alt="" coords="177,203,251,228"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="75,128,111,157,157,188,170,194,167,199,155,192,108,161,72,132"/>
+</map>

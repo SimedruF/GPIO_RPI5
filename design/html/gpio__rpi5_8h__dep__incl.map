@@ -1,0 +1,7 @@
+<map id="gpio_rpi5.h" name="gpio_rpi5.h">
+<area shape="rect" id="Node000001" title="Public API header for the GPIO_RPI5 library (Raspberry Pi 5)." alt="" coords="75,5,170,31"/>
+<area shape="rect" id="Node000002" href="$gpio__rpi5_8c.html" title="Direct register access GPIO backend for Raspberry Pi 5." alt="" coords="5,79,99,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,43,65,80,62,77,99,39"/>
+<area shape="rect" id="Node000003" href="$gpio__rpi5__pinctrl_8c.html" title="Pinctrl CLI fallback GPIO backend for Raspberry Pi 5." alt="" coords="123,79,264,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,39,184,77,180,80,142,43"/>
+</map>

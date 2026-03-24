@@ -1,0 +1,23 @@
+<map id="pintoggle" name="pintoggle">
+<area shape="rect" id="Node000001" title="Toggle the output state of a GPIO pin." alt="" coords="5,104,88,129"/>
+<area shape="rect" id="Node000002" href="$gpio__rpi5_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin number is within the RP1 range." alt="" coords="259,153,375,179"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,127,137,139,246,156,245,162,135,145,87,132"/>
+<area shape="rect" id="Node000003" href="$gpio__rpi5_8c.html#a47014639910a37eb40b480237febc9cf" title="Resolve a GPIO number (0–53) into its bank&#45;specific parameters." alt="" coords="266,5,367,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="57,102,89,70,111,53,135,40,194,22,252,15,252,20,195,27,137,44,114,57,93,74,61,105"/>
+<area shape="rect" id="Node000004" href="$group__core__api.html#gaa1c9a22bd9f995b5bd9520bf55761835" title="Read the current logic level of a GPIO pin (pinctrl backend)." alt="" coords="138,55,209,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="79,101,126,83,128,88,81,106"/>
+<area shape="rect" id="Node000007" href="$group__core__api.html#ga667ec854157d4f186d37073adf17c3d5" title="Write a digital value to a GPIO pin (pinctrl backend)." alt="" coords="136,104,211,129"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="88,114,122,114,122,119,88,119"/>
+<area shape="rect" id="Node000008" href="$gpio__rpi5_8c.html#a4c01897c77fc1077daf91b31480ded50" title="Write a 32&#45;bit value to a hardware register." alt="" coords="275,204,358,229"/>
+<area shape="poly" id="edge13_Node000001_Node000008" title=" " alt="" coords="73,127,137,157,263,199,261,204,135,162,71,132"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="197,78,212,89,236,116,246,128,260,140,268,145,265,149,257,144,242,131,232,119,209,93,194,82"/>
+<area shape="poly" id="edge6_Node000004_Node000003" title=" " alt="" coords="208,53,266,33,267,38,210,58"/>
+<area shape="rect" id="Node000005" href="$gpio__rpi5__pinctrl_8c.html#ac29239721da816fdd910b09545678264" title="Validate that a pin index is within any known GPIO range." alt="" coords="259,104,375,129"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="210,77,267,97,266,102,208,82"/>
+<area shape="rect" id="Node000006" href="$gpio__rpi5_8c.html#a6ddca9e64247d9b8a877e9b70ec52bfe" title="Read a 32&#45;bit hardware register." alt="" coords="277,55,356,80"/>
+<area shape="poly" id="edge7_Node000004_Node000006" title=" " alt="" coords="209,65,264,65,264,70,209,70"/>
+<area shape="poly" id="edge9_Node000007_Node000002" title=" " alt="" coords="212,127,267,146,265,151,210,132"/>
+<area shape="poly" id="edge11_Node000007_Node000003" title=" " alt="" coords="193,102,209,89,232,64,257,40,265,35,268,39,260,44,236,68,212,93,196,106"/>
+<area shape="poly" id="edge10_Node000007_Node000005" title=" " alt="" coords="211,114,245,114,245,119,211,119"/>
+<area shape="poly" id="edge12_Node000007_Node000008" title=" " alt="" coords="189,128,220,158,260,189,271,195,268,200,257,194,216,162,185,132"/>
+</map>
