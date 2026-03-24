@@ -92,6 +92,15 @@ Requires MinGW (gcc/g++) in PATH. The direct register backend requires Linux on 
 | `UNDEF` | 3 | Unknown / uninitialized state |
 
 ### Pull Resistors
+
+A **pull resistor** is a resistor that connects a GPIO pin to a known voltage level (3.3V or GND) so the pin has a defined state when nothing is actively driving it. Without a pull resistor, an input pin left unconnected (floating) picks up electrical noise and reads random HIGH/LOW values — this causes unreliable behavior.
+
+- **Pull-up** ties the pin to 3.3V through a resistor → pin reads **HIGH** by default. When a button (connected between pin and GND) is pressed, it pulls the pin LOW. This is the most common configuration for buttons and switches.
+- **Pull-down** ties the pin to GND through a resistor → pin reads **LOW** by default. When a signal drives the pin HIGH, the change is detected cleanly.
+- **No pull (floating)** leaves the pin unconnected — only use this when an external circuit always drives the pin.
+
+The Raspberry Pi 5 has built-in (internal) pull resistors that can be enabled via software using `pinpull()`, so in most cases you don't need external resistors.
+
 | Constant | Value | Description |
 |---|---|---|
 | `PULL_NONE` | 0 | No pull resistor (floating) |
