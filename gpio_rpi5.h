@@ -1,6 +1,11 @@
 #ifndef GPIO_RPI5_H
 #define GPIO_RPI5_H
-#define GPIO_RPI5
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define GPIO_MAX_INDEX 237
 
 #define GPIO0  0//: ip    pu | hi // ID_SDA/GPIO0 = input
 #define GPIO1  1//: ip    pu | hi // ID_SCL/GPIO1 = input
@@ -124,18 +129,53 @@
 #define LOW (0)
 #define HIGH (1)
 #define UNDEF (3)
+/**
+ * Pull-up/Pull-down */
+#define PULL_NONE (0)
+#define PULL_UP   (1)
+#define PULL_DOWN (2)
+/**
+ * Alternate functions (FUNCSEL values for RP1) */
+#define ALT0  (0)
+#define ALT1  (1)
+#define ALT2  (2)
+#define ALT3  (3)
+#define ALT4  (4)
+#define ALT5  (5)  /* SIO = normal GPIO */
+#define ALT6  (6)
+#define ALT7  (7)
+#define ALT8  (8)
+#define GPIO_FUNC_SIO  ALT5
+#define GPIO_FUNC_NULL (31)
+/**
+ * Drive strength */
+#define DRIVE_2MA  (0)
+#define DRIVE_4MA  (1)
+#define DRIVE_8MA  (2)
+#define DRIVE_12MA (3)
 
 #define TEST_PIN 17
 
 typedef struct {
         int state; /* LOW =0, HIGH=1, UNDEF=3 */
-        int mode; /* 0 = input ; 1 = output */
+        int mode;  /* 0 = input ; 1 = output */
 } pin_t;
 
+/* Core API */
+int gpio_init(void);
+void gpio_cleanup(void);
 int gpio_pintest(int pin_indx);
 pin_t pinopen(int pin, int mode);
 void pinclose(int indx_pin);
-void pinwrite(int indx_pin, int value);
+int pinwrite(int indx_pin, int value);
 int pinread(int pin);
+int pintoggle(int pin);
+int pinpull(int pin, int pull);
+int pinalt(int pin, int func);
+int pin_set_drive(int pin, int strength);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // GPIO_RPI5_H
