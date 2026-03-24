@@ -1,3 +1,20 @@
+/**
+ * @file gpio_rpi5.h
+ * @brief Public API header for the GPIO_RPI5 library (Raspberry Pi 5).
+ *
+ * Provides a hardware abstraction layer for controlling GPIO pins on the
+ * Raspberry Pi 5 through either direct RP1 register access (mmap) or the
+ * pinctrl CLI backend. The API covers digital I/O, pull resistor
+ * configuration, alternate function selection, and drive strength control.
+ *
+ * Two interchangeable backends implement this API:
+ * - @ref gpio_rpi5.c — Direct register access via `/dev/gpiomem0` (fast, ~10 ns per operation)
+ * - @ref gpio_rpi5_pinctrl.c — `pinctrl` CLI wrapper (slower, ~10 ms per operation, wider GPIO range)
+ *
+ * @note All GPIO numbers follow the RP1/BCM2712 scheme, not physical header pin numbers.
+ * @see https://datasheets.raspberrypi.com/rp1/rp1-peripherals.pdf
+ */
+
 #ifndef GPIO_RPI5_H
 #define GPIO_RPI5_H
 
@@ -5,8 +22,27 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Maximum valid GPIO index across all banks.
+ *
+ * Covers RP1 GPIOs (0–53), BCM2712 GPIOs (100–135), and AON GPIOs (200–237).
+ */
 #define GPIO_MAX_INDEX 237
 
+/**
+ * @defgroup gpio_pins GPIO Pin Definitions
+ * @brief Symbolic constants for all Raspberry Pi 5 GPIO pins.
+ *
+ * Three GPIO banks are defined:
+ * - **RP1 Bank** (GPIO0–GPIO53): Main GPIO controller on the RP1 southbridge.
+ *   GPIO0–GPIO27 are accessible on the 40-pin header.
+ * - **BCM2712 Bank** (GPIOx100–GPIOx135): Processor-side GPIOs.
+ * - **AON Bank** (GPIOx200–GPIOx237): Always-On domain GPIOs.
+ *
+ * Each definition includes a comment showing the default boot state:
+ * `mode  pull | level` — e.g., `ip pu | hi` = input, pull-up, reads high.
+ * @{
+ */
 #define GPIO0  0//: ip    pu | hi // ID_SDA/GPIO0 = input
 #define GPIO1  1//: ip    pu | hi // ID_SCL/GPIO1 = input
 #define GPIO2  2//: a3    pu | hi // GPIO2 = SDA1
@@ -120,59 +156,224 @@ extern "C" {
 #define GPIOx235 235//: a1    -- | hi // HDMI1_SDA/AON_SGPIO3 = HDMI_TX1_BSC_SDA
 #define GPIOx236 236//: a2    -- | hi // PMIC_SCL/AON_SGPIO4 = BSC_M2_SCL
 #define GPIOx237 237//: a2    -- | hi // PMIC_SDA/AON_SGPIO5 = BSC_M2_SDA
+/** @} */ /* end of gpio_pins */
+
+/**
+ * @defgroup pin_modes Pin Mode Constants
+ * @brief Direction modes for GPIO pins.
+ * @{
+ */
 /**
  * Pin modes: */
-#define INPUT (0)
-#define OUTPUT (1)
-/** 
- * Pin states */
-#define LOW (0)
-#define HIGH (1)
-#define UNDEF (3)
-/**
- * Pull-up/Pull-down */
-#define PULL_NONE (0)
-#define PULL_UP   (1)
-#define PULL_DOWN (2)
-/**
- * Alternate functions (FUNCSEL values for RP1) */
-#define ALT0  (0)
-#define ALT1  (1)
-#define ALT2  (2)
-#define ALT3  (3)
-#define ALT4  (4)
-#define ALT5  (5)  /* SIO = normal GPIO */
-#define ALT6  (6)
-#define ALT7  (7)
-#define ALT8  (8)
-#define GPIO_FUNC_SIO  ALT5
-#define GPIO_FUNC_NULL (31)
-/**
- * Drive strength */
-#define DRIVE_2MA  (0)
-#define DRIVE_4MA  (1)
-#define DRIVE_8MA  (2)
-#define DRIVE_12MA (3)
+#define INPUT (0)   /**< @brief Configure pin as digital input. */
+#define OUTPUT (1)  /**< @brief Configure pin as digital output. */
+/** @} */ /* end of pin_modes */
 
+/**
+ * @defgroup pin_states Pin State Constants
+ * @brief Logic level values returned by pinread() and used by pinwrite().
+ * @{
+ */
+#define LOW (0)     /**< @brief Logic low (0 V). */
+#define HIGH (1)    /**< @brief Logic high (3.3 V on RPi5). */
+#define UNDEF (3)   /**< @brief Unknown / uninitialized state. */
+/** @} */ /* end of pin_states */
+
+/**
+ * @defgroup pull_resistors Pull Resistor Constants
+ * @brief Internal pull-up/pull-down resistor configuration values.
+ *
+ * The RP1 includes programmable internal pull resistors on every GPIO pad.
+ * Use these constants with pinpull() to set the desired configuration.
+ * @{
+ */
+#define PULL_NONE (0) /**< @brief No pull resistor (pin is floating). */
+#define PULL_UP   (1) /**< @brief Enable internal pull-up resistor (~50 kOhm to 3.3 V). */
+#define PULL_DOWN (2) /**< @brief Enable internal pull-down resistor (~50 kOhm to GND). */
+/** @} */ /* end of pull_resistors */
+/**
+ * @defgroup alt_functions Alternate Function Constants
+ * @brief FUNCSEL values for the RP1 GPIO controller.
+ *
+ * Each GPIO pin can be muxed to one of several peripheral functions (SPI,
+ * I2C, UART, PWM, PCM, etc.) by writing the corresponding FUNCSEL value
+ * to the pin's control register. The mapping varies per pin — consult the
+ * RP1 peripherals datasheet for the full pin-function matrix.
+ * @{
+ */
+#define ALT0  (0)  /**< @brief Alternate function 0 (e.g., SPI0, PCM). */
+#define ALT1  (1)  /**< @brief Alternate function 1. */
+#define ALT2  (2)  /**< @brief Alternate function 2. */
+#define ALT3  (3)  /**< @brief Alternate function 3 (e.g., I2C1). */
+#define ALT4  (4)  /**< @brief Alternate function 4 (e.g., UART0). */
+#define ALT5  (5)  /**< @brief SIO — Standard GPIO mode (default after pinopen). */
+#define ALT6  (6)  /**< @brief Alternate function 6. */
+#define ALT7  (7)  /**< @brief Alternate function 7. */
+#define ALT8  (8)  /**< @brief Alternate function 8. */
+#define GPIO_FUNC_SIO  ALT5   /**< @brief Normal GPIO (SIO) function selector. */
+#define GPIO_FUNC_NULL (31)   /**< @brief Disconnect pin (set by pinclose). */
+/** @} */ /* end of alt_functions */
+/**
+ * @defgroup drive_strength Drive Strength Constants
+ * @brief Output drive current configuration for GPIO pads.
+ *
+ * Controls the maximum current a GPIO output can source/sink.
+ * Higher drive strength is needed for fast signals (SPI clock) or heavy loads.
+ * The default after reset is typically DRIVE_4MA.
+ * @{
+ */
+#define DRIVE_2MA  (0)  /**< @brief 2 mA drive strength. */
+#define DRIVE_4MA  (1)  /**< @brief 4 mA drive strength (default). */
+#define DRIVE_8MA  (2)  /**< @brief 8 mA drive strength. */
+#define DRIVE_12MA (3)  /**< @brief 12 mA drive strength (maximum). */
+/** @} */ /* end of drive_strength */
+
+/** @brief Default pin used by gpio_pintest(). */
 #define TEST_PIN 17
 
+/**
+ * @brief Represents the state of a single GPIO pin.
+ *
+ * Returned by pinopen() and cached internally for each pin.
+ * The @c state field holds the last known logic level, and the
+ * @c mode field holds the current direction (INPUT or OUTPUT).
+ */
 typedef struct {
-        int state; /* LOW =0, HIGH=1, UNDEF=3 */
-        int mode;  /* 0 = input ; 1 = output */
+        int state; /**< @brief Logic level: LOW (0), HIGH (1), or UNDEF (3). */
+        int mode;  /**< @brief Direction: INPUT (0), OUTPUT (1), or UNDEF (3). */
 } pin_t;
 
-/* Core API */
+/**
+ * @defgroup core_api Core API Functions
+ * @brief Functions for GPIO initialization, I/O, and configuration.
+ * @{
+ */
+
+/**
+ * @brief Initialize the GPIO subsystem.
+ *
+ * Must be called once before any other GPIO function. Opens the memory-mapped
+ * device (mmap backend) or prepares internal state (pinctrl backend).
+ *
+ * @return 0 on success, -1 on failure (e.g., `/dev/gpiomem0` not accessible).
+ */
 int gpio_init(void);
+
+/**
+ * @brief Release all GPIO resources.
+ *
+ * Unmaps memory (mmap backend) and closes file descriptors. Should be called
+ * at program exit or when GPIO access is no longer needed.
+ */
 void gpio_cleanup(void);
+
+/**
+ * @brief Quick pin test: briefly pulses a pin HIGH then LOW.
+ *
+ * Opens the pin as OUTPUT, writes HIGH, waits 1 second, writes LOW, then
+ * closes the pin. Useful for verifying that a pin is physically functional.
+ *
+ * @param pin_indx GPIO number to test (0–53 for mmap backend).
+ * @return 0 on success, -1 on error.
+ */
 int gpio_pintest(int pin_indx);
+
+/**
+ * @brief Open a GPIO pin for use in the specified direction.
+ *
+ * Configures the pin as INPUT or OUTPUT by setting the FUNCSEL to SIO mode
+ * and adjusting the output-enable register. The pin must be opened before
+ * calling pinwrite(), pinread(), or pintoggle().
+ *
+ * @param pin  GPIO number (0–53 for mmap backend, 0–237 for pinctrl).
+ * @param mode Direction: INPUT (0) or OUTPUT (1).
+ * @return A pin_t struct with the configured mode. On error, both fields are UNDEF.
+ */
 pin_t pinopen(int pin, int mode);
+
+/**
+ * @brief Close a GPIO pin and reset it to a safe state.
+ *
+ * Sets the pin back to input mode and disconnects the function selector
+ * (FUNCSEL = NULL). The internal state is reset to UNDEF.
+ *
+ * @param indx_pin GPIO number to close.
+ */
 void pinclose(int indx_pin);
+
+/**
+ * @brief Write a digital value (HIGH or LOW) to a GPIO output pin.
+ *
+ * Uses atomic SET/CLR registers (mmap backend) for glitch-free writes.
+ *
+ * @param indx_pin GPIO number (must have been opened as OUTPUT).
+ * @param value    Desired level: HIGH (1) or LOW (0).
+ * @return 0 on success, -1 on error.
+ */
 int pinwrite(int indx_pin, int value);
+
+/**
+ * @brief Read the current logic level of a GPIO pin.
+ *
+ * Reads the input register regardless of whether the pin is configured as
+ * INPUT or OUTPUT (output pins can be read back).
+ *
+ * @param pin GPIO number.
+ * @return HIGH (1), LOW (0), or -1 on error.
+ */
 int pinread(int pin);
+
+/**
+ * @brief Toggle the output state of a GPIO pin.
+ *
+ * Uses the atomic XOR register (mmap backend) for a single-instruction
+ * toggle, which is faster and safer than a read-modify-write sequence.
+ *
+ * @param pin GPIO number (must have been opened as OUTPUT).
+ * @return 0 on success, -1 on error.
+ */
 int pintoggle(int pin);
+
+/**
+ * @brief Configure the internal pull resistor for a GPIO pin.
+ *
+ * Sets pull-up, pull-down, or no-pull on the pin's pad register.
+ * Pull resistors ensure a defined logic level when the pin is not actively
+ * driven — essential for buttons, open-drain buses, etc.
+ *
+ * @param pin  GPIO number.
+ * @param pull One of PULL_UP, PULL_DOWN, or PULL_NONE.
+ * @return 0 on success, -1 on error.
+ */
 int pinpull(int pin, int pull);
+
+/**
+ * @brief Set the alternate function (FUNCSEL) for a GPIO pin.
+ *
+ * Switches the pin from standard GPIO mode to a peripheral function
+ * (e.g., SPI, I2C, UART, PWM, PCM). The function number is chip-specific;
+ * refer to the RP1 datasheet for the pin-function mapping table.
+ *
+ * @param pin  GPIO number.
+ * @param func Alternate function number: ALT0–ALT8, or GPIO_FUNC_NULL (31).
+ * @return 0 on success, -1 on error.
+ */
 int pinalt(int pin, int func);
+
+/**
+ * @brief Set the output drive strength for a GPIO pin.
+ *
+ * Configures how much current the pin can source or sink. Higher values
+ * are needed for driving long traces, LEDs, or fast digital signals.
+ *
+ * @param pin      GPIO number.
+ * @param strength One of DRIVE_2MA, DRIVE_4MA, DRIVE_8MA, or DRIVE_12MA.
+ * @return 0 on success, -1 on error.
+ * @note Only supported by the mmap backend. The pinctrl backend returns -1.
+ */
 int pin_set_drive(int pin, int strength);
+
+/** @} */ /* end of core_api */
 
 #ifdef __cplusplus
 }

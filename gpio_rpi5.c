@@ -1,11 +1,32 @@
-/*
- * gpio_rpi5.c - Direct register access GPIO library for Raspberry Pi 5
+/**
+ * @file gpio_rpi5.c
+ * @brief Direct register access GPIO backend for Raspberry Pi 5.
  *
- * Uses mmap on /dev/gpiomem0 to access RP1 GPIO registers directly.
- * ~1000x faster than the pinctrl command-line backend.
+ * This backend uses memory-mapped I/O (`mmap`) on `/dev/gpiomem0` to access
+ * the RP1 southbridge GPIO registers directly from userspace. It provides
+ * extremely fast GPIO operations (~10 ns per read/write) compared to the
+ * pinctrl CLI backend (~10 ms).
  *
- * Supports RP1 GPIOs 0-53 (including the 40-pin header GPIOs 0-27).
- * For BCM2712/AON GPIOs (100-237), use the pinctrl backend instead.
+ * @par Supported GPIO Range
+ * Only RP1 GPIOs 0–53 are accessible through this backend. For BCM2712
+ * GPIOs (100–135) and AON GPIOs (200–237), use the pinctrl backend instead.
+ *
+ * @par RP1 Memory Map (via /dev/gpiomem0, 192 KB region)
+ * | Block        | Offset   | Description                          |
+ * |--------------|----------|--------------------------------------|
+ * | IO_BANK0     | 0x00000  | GPIO 0–27 control/status registers   |
+ * | IO_BANK1     | 0x04000  | GPIO 28–53 control/status registers  |
+ * | SYS_RIO0     | 0x10000  | GPIO 0–27 fast register I/O          |
+ * | SYS_RIO1     | 0x14000  | GPIO 28–53 fast register I/O         |
+ * | PADS_BANK0   | 0x20000  | GPIO 0–27 pad configuration          |
+ * | PADS_BANK1   | 0x24000  | GPIO 28–53 pad configuration         |
+ *
+ * @par Atomic Register Access
+ * The SYS_RIO blocks support atomic SET, CLR, and XOR operations at fixed
+ * offsets from the base, allowing glitch-free single-register writes without
+ * read-modify-write races.
+ *
+ * @see https://datasheets.raspberrypi.com/rp1/rp1-peripherals.pdf
  *
  * Compile with: gcc -c gpio_rpi5.c -o gpio_rpi5.o -Wall -Wextra
  */
@@ -31,79 +52,134 @@
  * PADS_BANK1   0x24000  GPIO 28-53 pad configuration
  * ============================================================ */
 
+/**
+ * @defgroup rp1_registers RP1 Register Definitions
+ * @brief Memory offsets and bit-field masks for the RP1 GPIO controller.
+ * @{
+ */
+
+/** @brief Device path for the RP1 GPIO memory region. */
 #define GPIOMEM_DEVICE  "/dev/gpiomem0"
+
+/** @brief Total size of the memory-mapped region (192 KB). */
 #define GPIO_MEM_SIZE   0x30000
 
-/* IO Bank offsets */
-#define RP1_IO_BANK0     0x00000
-#define RP1_IO_BANK1     0x04000
+/** @name IO Bank Base Offsets
+ *  Control and status registers for each GPIO pin.
+ * @{ */
+#define RP1_IO_BANK0     0x00000  /**< @brief GPIO 0–27 control registers. */
+#define RP1_IO_BANK1     0x04000  /**< @brief GPIO 28–53 control registers. */
+/** @} */
 
-/* RIO (Register I/O) base offsets */
-#define RP1_SYS_RIO0     0x10000
-#define RP1_SYS_RIO1     0x14000
+/** @name RIO (Register I/O) Base Offsets
+ *  Fast read/write/toggle registers with atomic access support.
+ * @{ */
+#define RP1_SYS_RIO0     0x10000  /**< @brief GPIO 0–27 fast register I/O. */
+#define RP1_SYS_RIO1     0x14000  /**< @brief GPIO 28–53 fast register I/O. */
+/** @} */
 
-/* Pad control base offsets */
-#define RP1_PADS_BANK0   0x20000
-#define RP1_PADS_BANK1   0x24000
+/** @name Pad Control Base Offsets
+ *  Drive strength, pull resistor, slew rate, and Schmitt trigger configuration.
+ * @{ */
+#define RP1_PADS_BANK0   0x20000  /**< @brief GPIO 0–27 pad configuration. */
+#define RP1_PADS_BANK1   0x24000  /**< @brief GPIO 28–53 pad configuration. */
+/** @} */
 
-/* Atomic register access offsets (relative to base) */
-#define RP1_XOR_OFFSET   0x1000
-#define RP1_SET_OFFSET   0x2000
-#define RP1_CLR_OFFSET   0x3000
+/** @name Atomic Access Offsets
+ *  Added to the RIO base to perform atomic bit operations without read-modify-write.
+ * @{ */
+#define RP1_XOR_OFFSET   0x1000  /**< @brief XOR (toggle) bits in the register. */
+#define RP1_SET_OFFSET   0x2000  /**< @brief SET (write 1) bits in the register. */
+#define RP1_CLR_OFFSET   0x3000  /**< @brief CLR (write 0) bits in the register. */
+/** @} */
 
-/* RIO register offsets within each SYS_RIOx block */
-#define RIO_OUT  0x00   /* Output value */
-#define RIO_OE   0x04   /* Output enable */
-#define RIO_IN   0x08   /* Input value (read-only) */
+/** @name RIO Register Offsets
+ *  Offsets within each SYS_RIOx block for output, output-enable, and input.
+ * @{ */
+#define RIO_OUT  0x00   /**< @brief Output value register. */
+#define RIO_OE   0x04   /**< @brief Output enable register (1 = output, 0 = input). */
+#define RIO_IN   0x08   /**< @brief Input value register (read-only). */
+/** @} */
 
-/* IO Bank: per-pin register offsets (stride = 8 bytes per pin) */
-#define GPIO_STATUS(pin_in_bank) ((pin_in_bank) * 8)
-#define GPIO_CTRL(pin_in_bank)   ((pin_in_bank) * 8 + 4)
+/** @name IO Bank Per-Pin Register Macros
+ *  Each pin occupies 8 bytes: STATUS (4 bytes) + CTRL (4 bytes).
+ * @{ */
+#define GPIO_STATUS(pin_in_bank) ((pin_in_bank) * 8)       /**< @brief STATUS register offset for a pin within its bank. */
+#define GPIO_CTRL(pin_in_bank)   ((pin_in_bank) * 8 + 4)   /**< @brief CTRL register offset for a pin within its bank. */
+/** @} */
 
-/* GPIO CTRL register fields */
-#define CTRL_FUNCSEL_MASK  0x1F
-#define CTRL_FUNCSEL_LSB   0
-#define CTRL_OUTOVER_MASK  (0x3 << 12)
-#define CTRL_OEOVER_MASK   (0x3 << 14)
+/** @name GPIO CTRL Register Fields
+ * @{ */
+#define CTRL_FUNCSEL_MASK  0x1F          /**< @brief FUNCSEL field mask (bits 4:0). */
+#define CTRL_FUNCSEL_LSB   0             /**< @brief FUNCSEL field LSB position. */
+#define CTRL_OUTOVER_MASK  (0x3 << 12)   /**< @brief Output override field mask. */
+#define CTRL_OEOVER_MASK   (0x3 << 14)   /**< @brief Output-enable override field mask. */
+/** @} */
 
-/* PADS register: offset per pin (pin 0 at offset 0x04) */
-#define PADS_GPIO(pin_in_bank) (0x04 + (pin_in_bank) * 4)
+/** @name PADS Register Macros and Bit Fields
+ * @{ */
+#define PADS_GPIO(pin_in_bank) (0x04 + (pin_in_bank) * 4)  /**< @brief Pad register offset (pin 0 starts at 0x04). */
+#define PAD_OD_BIT       (1 << 7)  /**< @brief Output disable bit. */
+#define PAD_IE_BIT       (1 << 6)  /**< @brief Input enable bit. */
+#define PAD_DRIVE_MASK   (0x3 << 4) /**< @brief Drive strength field mask. */
+#define PAD_DRIVE_LSB    4          /**< @brief Drive strength field LSB position. */
+#define PAD_PUE_BIT      (1 << 3)  /**< @brief Pull-up enable bit. */
+#define PAD_PDE_BIT      (1 << 2)  /**< @brief Pull-down enable bit. */
+#define PAD_SCHMITT_BIT  (1 << 1)  /**< @brief Schmitt trigger enable bit. */
+#define PAD_SLEWFAST_BIT (1 << 0)  /**< @brief Fast slew rate enable bit. */
+/** @} */
 
-/* PADS register bit fields */
-#define PAD_OD_BIT       (1 << 7)  /* Output disable */
-#define PAD_IE_BIT       (1 << 6)  /* Input enable */
-#define PAD_DRIVE_MASK   (0x3 << 4)
-#define PAD_DRIVE_LSB    4
-#define PAD_PUE_BIT      (1 << 3)  /* Pull-up enable */
-#define PAD_PDE_BIT      (1 << 2)  /* Pull-down enable */
-#define PAD_SCHMITT_BIT  (1 << 1)  /* Schmitt trigger */
-#define PAD_SLEWFAST_BIT (1 << 0)  /* Slew rate */
+/** @} */ /* end of rp1_registers */
 
 /* ============================================================ */
 
+/** @brief Base pointer to the memory-mapped RP1 register region. */
 static volatile uint32_t *gpio_mmap_base = NULL;
+
+/** @brief File descriptor for `/dev/gpiomem0`. */
 static int gpio_mmap_fd = -1;
+
+/** @brief Initialization flag (1 after successful gpio_init()). */
 static int gpio_initialized = 0;
 
+/** @brief Global array caching the state of all GPIO pins. */
 pin_t rpi5_gpio[GPIO_MAX_INDEX + 1];
 
 /* ---- Internal helpers ------------------------------------ */
 
-/* Read a 32-bit register at byte offset from mapped base */
+/**
+ * @brief Read a 32-bit hardware register.
+ * @param byte_offset Byte offset from the mapped base address.
+ * @return The 32-bit register value.
+ */
 static inline uint32_t reg_read(uint32_t byte_offset)
 {
   return gpio_mmap_base[byte_offset / 4];
 }
 
-/* Write a 32-bit register at byte offset from mapped base */
+/**
+ * @brief Write a 32-bit value to a hardware register.
+ * @param byte_offset Byte offset from the mapped base address.
+ * @param val         Value to write.
+ */
 static inline void reg_write(uint32_t byte_offset, uint32_t val)
 {
   gpio_mmap_base[byte_offset / 4] = val;
 }
 
-/*
- * Resolve a GPIO number (0-53) to its bank parameters.
- * Returns 0 on success, -1 if pin is out of RP1 range.
+/**
+ * @brief Resolve a GPIO number (0–53) into its bank-specific parameters.
+ *
+ * The RP1 has two banks: Bank 0 covers GPIO 0–27, Bank 1 covers GPIO 28–53.
+ * This function returns the base offsets for IO, RIO, and PADS registers,
+ * along with the bit position within the bank.
+ *
+ * @param[in]  pin        GPIO number (0–53).
+ * @param[out] io_base    IO bank base offset.
+ * @param[out] rio_base   RIO bank base offset.
+ * @param[out] pads_base  PADS bank base offset.
+ * @param[out] bit        Bit position of the pin within the bank (0–27).
+ * @return 0 on success, -1 if the pin is out of the RP1 range.
  */
 static int pin_to_bank(int pin,
                        uint32_t *io_base,
@@ -130,13 +206,17 @@ static int pin_to_bank(int pin,
   return -1;
 }
 
-/* Validate that a pin is within RP1 range (0-53) */
+/**
+ * @brief Validate that a pin number is within the RP1 range.
+ * @param pin GPIO number to validate.
+ * @return 1 if valid (0–53), 0 otherwise.
+ */
 static int gpio_valid_pin(int pin)
 {
   return (pin >= 0 && pin <= 53);
 }
 
-/* ---- Public API ------------------------------------------ */
+/* ---- Public API (mmap backend) -------------------------- */
 
 int gpio_init(void)
 {

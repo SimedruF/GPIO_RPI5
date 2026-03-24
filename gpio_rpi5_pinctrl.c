@@ -1,5 +1,25 @@
-// gpio_rpi5_pinctrl.c - GPIO library using pinctrl command (fallback backend)
-// Compile with: gcc -c gpio_rpi5_pinctrl.c -o gpio_rpi5_pinctrl.o -Wall -Wextra
+/**
+ * @file gpio_rpi5_pinctrl.c
+ * @brief Pinctrl CLI fallback GPIO backend for Raspberry Pi 5.
+ *
+ * This backend executes the `pinctrl` command-line tool (via `popen()`) to
+ * control GPIO pins. It is significantly slower than the mmap backend (~10 ms
+ * per operation due to process spawning) but supports all GPIO ranges:
+ * - RP1 GPIOs 0–53 (40-pin header)
+ * - BCM2712 GPIOs 100–135 (processor-side)
+ * - AON GPIOs 200–237 (always-on domain)
+ *
+ * @par When to Use This Backend
+ * - When you need to access GPIOs outside the RP1 range (100–237).
+ * - When `/dev/gpiomem0` is not available.
+ * - For quick prototyping where speed is not critical.
+ *
+ * @par Limitations
+ * - pin_set_drive() is not supported (returns -1).
+ * - pintoggle() is implemented as pinread() + pinwrite() (two CLI calls).
+ *
+ * Compile with: gcc -c gpio_rpi5_pinctrl.c -o gpio_rpi5_pinctrl.o -Wall -Wextra
+ */
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -12,10 +32,23 @@
 #include "gpio_rpi5.h"
 
 
+/** @brief Global array caching the state of all GPIO pins. */
 pin_t rpi5_gpio[GPIO_MAX_INDEX + 1];
+
+/** @brief Initialization flag (1 after successful gpio_init()). */
 static int gpio_initialized = 0;
 
-/* Validate that a pin index is within known GPIO ranges */
+/**
+ * @brief Validate that a pin index is within any known GPIO range.
+ *
+ * Unlike the mmap backend (which only supports 0–53), this backend accepts:
+ * - 0–53 (RP1 GPIOs)
+ * - 100–135 (BCM2712 GPIOs)
+ * - 200–237 (AON GPIOs)
+ *
+ * @param pin GPIO number to validate.
+ * @return 1 if valid, 0 otherwise.
+ */
 static int gpio_valid_pin(int pin)
 {
   if (pin >= 0 && pin <= 53)   return 1;  /* RP1 GPIOs */
