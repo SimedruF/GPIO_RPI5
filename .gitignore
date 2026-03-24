@@ -1,0 +1,67 @@
+# Compiled executables in test/ directory
+test/test_stats
+test/test_moving_average
+test/test_normalize
+test/test_smoothing
+test/test_event_detection
+test/test_timestamp
+test/test_peak_detection
+test/test
+
+# Compiled executables in examples/ directory
+examples/example_complete
+
+# Object files
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Build directories
+build/
+bin/
+obj/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+
+# Core dumps
+core
+core.*
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# OS specific
+Thumbs.db
+Desktop.ini
+
+# Backup files
+*~
+\#*\#
+.\#*
