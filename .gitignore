@@ -1,33 +1,28 @@
-# Compiled executables in test/ directory
-test/test_stats
-test/test_moving_average
-test/test_normalize
-test/test_smoothing
-test/test_event_detection
-test/test_timestamp
-test/test_peak_detection
-test/test
-
-# Compiled executables in examples/ directory
-examples/example_complete
-
 # Object files
 *.o
 *.obj
+
+# Static / shared libraries
 *.a
 *.so
 *.dylib
 *.dll
-
-# Compiled Static libraries
+*.lib
 *.lai
 *.la
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
+test/myprogram
+
+# Temporary / editor files
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
 
 # Build directories
 build/
